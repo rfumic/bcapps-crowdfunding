@@ -17,9 +17,11 @@ contract Crowdfunding {
 
     mapping (uint256 => Campaign) private campaigns;
     uint256 currentId;
+    address public contractOwner;
 
     constructor() {
         currentId = 0;
+        contractOwner = msg.sender;
     }
 
     modifier canRefund(uint256 _campaignId){
