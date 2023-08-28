@@ -1,0 +1,15 @@
+{
+  "name": "bcapps-crowdfunding",
+  "version": "0.0.1",
+  "description": "Crowdfunding smart contract with hardhat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rfumic <rokofumic@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "hardhat": "^2.17.1"
+  }
+}
