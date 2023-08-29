@@ -24,6 +24,11 @@ contract Crowdfunding {
         contractOwner = msg.sender;
     }
 
+    event CampaignCreated(uint256 campaignId,address indexed owner, string title, uint256 goalAmount, uint256 deadline);
+
+    event Pledged(address indexed pledger, uint256 campaignId, uint256 amount);
+
+
     modifier canRefund(uint256 _campaignId){
         Campaign storage campaign = campaigns[_campaignId];
         
@@ -48,6 +53,7 @@ contract Crowdfunding {
         campaign.numberOfPledgers = 0;
 
         currentId += 1;
+        emit CampaignCreated(currentId-1, _owner, _title, _goalAmount, _deadline);
     }
 
 
@@ -63,6 +69,8 @@ contract Crowdfunding {
         if(!hasPledged){
             campaign.numberOfPledgers += 1;
         }
+
+        emit Pledged(msg.sender, _campaignId, msg.value);
     }
 
     function withdrawPledge(uint256 _campaignId) public canRefund(_campaignId){ 
@@ -107,7 +115,7 @@ contract Crowdfunding {
 
     function viewCampaign(uint256 _campaignId) public view returns(address, string memory, uint256, uint256, uint256, uint256) {
         Campaign storage campaign = campaigns[_campaignId];
-        return (campaign.owner, campaign.title, campaign.goalAmount, campaign.raisedAmount, campaign.deadline, campaign.numberOfPledgers);
+        return (campaign.owner, campaign.title, campaign.goalAmount, campaign.deadline, campaign.raisedAmount, campaign.numberOfPledgers);
     }
 
 
