@@ -115,7 +115,6 @@ contract Crowdfunding {
 
         require(block.timestamp >= campaign.deadline, "Campaign has not reached deadline!");
         require(campaign.owner == msg.sender, "You are not the campaign creator!");
-        // Maybe check if already collected fudns
         require(campaign.raisedAmount >= campaign.goalAmount, "Campaign has not reached its goal!");
         payable(msg.sender).transfer(campaign.raisedAmount);
 
@@ -129,5 +128,3 @@ contract Crowdfunding {
 
 
 }
-
-// TODO: Add events
