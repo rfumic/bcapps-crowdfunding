@@ -26,8 +26,7 @@ describe('Deployment', function () {
       addr1.address, // _owner
       'Campaign 1', // _title
       ethers.parseEther('1'), // _goalAmount
-      BigInt(Math.floor(Date.now() / 1000) + 604800), // _deadline
-      // (Math.floor(Date.now() / 1000) + 604800).toString(), // _deadline
+      BigInt(Math.floor(Date.now() / 1000) + 3600), // _deadline
     ];
 
     const campaign = await contract.createCampaign(...arguments);
@@ -65,7 +64,7 @@ describe('Deployment', function () {
   });
 
   describe('Successful campaign', function () {
-    it('Pledge to campaign', async function () {
+    it('Pledge full amount to campaign and collect pledges when over', async function () {
       const { campaign, arguments, contract, addr1, addr2 } = await loadFixture(
         createCampaignFixture
       );
@@ -75,6 +74,42 @@ describe('Deployment', function () {
       )
         .to.emit(contract, 'Pledged')
         .withArgs(addr2.address, 0, ethers.parseEther('1'));
+
+      // move timestamp to after deadline
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
+
+      while ((await ethers.provider.getBlock('latest')).timestamp < deadline) {
+        await ethers.provider.send('evm_mine', []);
+      }
+
+      await expect(contract.connect(addr1).collectPledges(0))
+        .to.emit(contract, 'CollectedPledges')
+        .withArgs(addr1.address, 0, ethers.parseEther('1'));
+    });
+  });
+
+  describe('Unsuccessful campaign', function () {
+    it('Pledge less than full amount and withdraw when campaign ends', async function () {
+      const { campaign, arguments, contract, addr1, addr2 } = await loadFixture(
+        createCampaignFixture
+      );
+
+      await expect(
+        contract.connect(addr2).pledge(0, { value: ethers.parseEther('.5') })
+      )
+        .to.emit(contract, 'Pledged')
+        .withArgs(addr2.address, 0, ethers.parseEther('.5'));
+
+      // move timestamp to after deadline
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
+
+      while ((await ethers.provider.getBlock('latest')).timestamp < deadline) {
+        await ethers.provider.send('evm_mine', []);
+      }
+
+      await expect(contract.connect(addr2).withdrawPledge(0))
+        .to.emit(contract, 'PledgeWithdrawn')
+        .withArgs(addr2.address, 0, ethers.parseEther('.5'));
     });
   });
 });

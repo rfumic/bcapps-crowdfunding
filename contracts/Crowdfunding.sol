@@ -28,6 +28,10 @@ contract Crowdfunding {
 
     event Pledged(address indexed pledger, uint256 campaignId, uint256 amount);
 
+    event CollectedPledges(address indexed campaignOwner, uint256 campaignId, uint256 raisedAmount);
+
+    event PledgeWithdrawn(address indexed pledger, uint256 campaignId, uint256 amount);
+
 
     modifier canRefund(uint256 _campaignId){
         Campaign storage campaign = campaigns[_campaignId];
@@ -83,6 +87,8 @@ contract Crowdfunding {
         campaign.numberOfPledgers -=1;
         campaign.raisedAmount -= pledgedAmount;
         payable(msg.sender).transfer(pledgedAmount);
+
+        emit PledgeWithdrawn(msg.sender, _campaignId, pledgedAmount);
     }
 
     // Overload for withdraw amount
@@ -101,6 +107,7 @@ contract Crowdfunding {
         campaign.raisedAmount -= withdrawAmount;
         payable(msg.sender).transfer(withdrawAmount);
 
+        emit PledgeWithdrawn(msg.sender, _campaignId, withdrawAmount);
     }
 
     function collectPledges(uint256 _campaignId) public {
@@ -111,6 +118,8 @@ contract Crowdfunding {
         // Maybe check if already collected fudns
         require(campaign.raisedAmount >= campaign.goalAmount, "Campaign has not reached its goal!");
         payable(msg.sender).transfer(campaign.raisedAmount);
+
+        emit CollectedPledges(msg.sender, _campaignId, campaign.raisedAmount);
     }
 
     function viewCampaign(uint256 _campaignId) public view returns(address, string memory, uint256, uint256, uint256, uint256) {
